@@ -1,0 +1,21 @@
+{
+  "name": "npm_stockfish",
+  "version": "1.0.0",
+  "description": "aprendiendo a usar stockfish con npm",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "start_stockfish": "node --experimental-wasm-threads --experimental-wasm-simd stockfish.js"
+  },
+  "keywords": [
+    "stockfish",
+    "back",
+    "ml"
+  ],
+  "author": "Juan Sebastian Hernández / Nicolás Tobo",
+  "license": "ISC",
+  "dependencies": {
+    "stockfish": "^14.1.0"
+  }
+}
