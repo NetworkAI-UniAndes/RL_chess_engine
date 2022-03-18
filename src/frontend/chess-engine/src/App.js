@@ -7,12 +7,23 @@ import './App.scss';
 export default function PlayRandomMoveEngine() {
   const [game, setGame] = useState(new Chess());
 
+  const [show, setShow] = useState(false);
+
+  var kind=false;
+
+  const handleClose = () => setShow(false);
+
   function safeGameMutate(modify) {
     setGame((g) => {
       const update = { ...g };
       modify(update);
       return update;
     });
+  }
+
+  function clickpve(){
+    kind=true;
+    handleClose;
   }
 
   function makeRandomMove() {
@@ -40,6 +51,18 @@ export default function PlayRandomMoveEngine() {
   }
 
   return <>
+  
+    <Modal.Dialog show={show} onHide={handleClose}>
+      <Modal.Header closeButton>
+        <Modal.Title>Choose mode</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body>
+        <Button onClick={clickpve}>Player vs Computer</Button>
+        <Button onClick={handleClose}>Player vs Player</Button>
+      </Modal.Body>
+    </Modal.Dialog>
+    
     <Chessboard 
         position={game.fen()} 
         onPieceDrop={onDrop} 
