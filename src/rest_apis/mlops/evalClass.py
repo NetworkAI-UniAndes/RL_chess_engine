@@ -26,19 +26,44 @@ class evalMove:
 
     
     def get_move(self):
-        abstab1 = np.abs(self.tab1)
-        abstab2 = np.abs(self.tab2)
+        
+        abstab1 = np.zeros(self.tab1.shape)
+        abstab2 = np.zeros(self.tab2.shape)
+        # Si juegan las blancas se elimian las piezas negras
+        # y si juegan las negras se eliminan las piezas blancas.
+        if self.is_white:
+            for i in range(self.tab1.shape[0]):
+                for j in range(self.tab1.shape[1]):
+                    abstab1[i,j]=self.tab1[i,j] if self.tab1[i,j]>0 else 0
+                    abstab2[i,j]=self.tab2[i,j] if self.tab2[i,j]>0 else 0
+        else:
+            for i in range(self.tab1.shape[0]):
+                for j in range(self.tab1.shape[1]):
+                    abstab1[i,j]=self.tab1[i,j] if self.tab1[i,j]<0 else 0
+                    abstab2[i,j]=self.tab2[i,j] if self.tab2[i,j]<0 else 0
+        abstab1 = np.abs(abstab1)
+        abstab2 = np.abs(abstab2)
+
+        # La resta de los tableros permite obtener la
+        # casilla de origen y la casilla final
         res = abstab2-abstab1
 
         x1, y1 = np.where(res > 0)
         x0, y0 = np.where(res < 0)
 
         filas = "abcdefgh"
+        # Se genera un map entre el nombre de las columnas
+        # y el índice.
         num2pos = {i:j for i,j in zip(range(8),filas)}
+
+        if len(x1)>1 and len(y1)>1:
+            # Este caso se da cuando hay enroque.
+            # Se busca la posición inicial y final del rey
+            x1,y1 = np.where(abstab2==6)
+            x0,y0 = np.where(abstab1==6)
 
         mov = f"{num2pos[y0[0]]}{abs(x0[0]-8)}{num2pos[y1[0]]}{abs(x1[0]-8)}"
         return [mov]
-
 
     @staticmethod
     def board_to_fen(tab1):
