@@ -8,7 +8,7 @@ from pathlib import Path
 
 class GameStarter:
     """This is the class in charge of accessing the local database of games.
-    It also serves as an entrpoint to generate random chess positions
+    It also serves as an entry point to generate random chess positions
     from the local database."""
 
     def __init__(self) -> None:
