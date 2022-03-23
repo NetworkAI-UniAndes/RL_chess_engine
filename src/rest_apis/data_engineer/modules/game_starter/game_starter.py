@@ -2,7 +2,7 @@ import os
 import sys
 import fnmatch
 import random
-import chess
+import chess.pgn
 from pathlib import Path
 
 
@@ -17,7 +17,9 @@ class GameStarter:
         will count the number of games per folder."""
 
         # Current working directory and then the path to the games DB folder
-        self.main_folder = os.getcwd()
+        self.main_folder = os.path.join(
+            os.getcwd().split("RL_chess_engine")[0], "RL_chess_engine"
+        )
         self.games_folder = os.path.join(self.main_folder, "src", "games")
         # Path to each type of games DB
         self.path_real_games = os.path.join(self.games_folder, "real_games")
@@ -44,7 +46,6 @@ class GameStarter:
         folder. If StockFish vs AlphaZero games are required this parameter should be equal to 'engine_games'.
         If games from our own engine are required `game_type` should be equal to 'played_engine_games`
         """
-        return_type = "pgn" if return_type == "pgn" else "python_chess"
         folder_path, folder_len = self.path_real_games, self.len_real_games
 
         if game_type == "engine_games":
@@ -57,7 +58,8 @@ class GameStarter:
         file_path = os.path.join(
             folder_path, f"{random.randint(0, folder_len - 1)}.pgn"
         )
-        game = chess.pgn.read_game(file_path)
+        with open(file_path) as file:
+            game = chess.pgn.read_game(file)
 
         return game
 
@@ -80,4 +82,4 @@ class GameStarter:
 
         game = self.getRandomGame(game_type=game_type)
         random_position = self.getRandomPositionFromGame(game)
-        return random_position.fen()
+        return random_position.board().fen()
