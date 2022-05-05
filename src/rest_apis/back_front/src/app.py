@@ -1,7 +1,6 @@
 import os
 from flask import Flask,request
 from dotenv import load_dotenv
-from pathlib import Path
 from flask_mongoengine import MongoEngine
 
 ## Load enviroment variables
@@ -54,6 +53,9 @@ def updateGame():
 def deleteGame():
     return 'recieved'    
 
+@app.route("/main-engine/game/movements/validate", methods = ['POST'])
+def deleteGame():
+    return 'recieved'    
 
 if __name__ == "__main__":
     if os.environ.get("APPDEBUG") == "ON":
