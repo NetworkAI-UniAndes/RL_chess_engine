@@ -80,7 +80,11 @@ class Scorer:
             # Se busca la posición inicial y final del rey
             x1,y1 = np.where(abstab2==6)
             x0,y0 = np.where(abstab1==6)
-
+        # Entra a este if si se da el caso de coronacion
+        elif res[x0, y0] + res[x1, y1] != 0:
+            pieza = self.inv_replace_dict[res[x1,y1][0]]
+            mov = f"{num2pos[y0[0]]}{abs(x0[0]-8)}{num2pos[y1[0]]}{abs(x1[0]-8)}"+pieza.lower()
+            return [mov]
         mov = f"{num2pos[y0[0]]}{abs(x0[0]-8)}{num2pos[y1[0]]}{abs(x1[0]-8)}"
         return [mov]
 
