@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
-import Button from 'react-bootstrap/Button';
-import axios from 'axios';
 import './App.scss';
 
 export default function PlayRandomMoveEngine() {
@@ -12,11 +10,16 @@ export default function PlayRandomMoveEngine() {
 
   useEffect(() => {
     // POST request using axios inside useEffect React hook
-    axios.post('https://localhost:5000/main-engine/game/movements/validate', body)
-        .then(response => console.log(response.data));
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+  };
+  fetch('https://127.0.0.1:5000/main-engine/game/movements/validate', requestOptions)
+      .then(response => console.log(response.data))
 
     // empty dependency array means this effect will only run once (like componentDidMount in classes)
-    }, [currentMove]);
+    }, [body]);
 
   function safeGameMutate(modify) {
     setGame((g) => {
@@ -60,7 +63,6 @@ export default function PlayRandomMoveEngine() {
         customDarkSquareStyle={{ backgroundColor: '#014B62' }}
         customLightSquareStyle={{ backgroundColor: '#11A1BB' }}
         />
-        <Button variant="primary">Button #1</Button>
     </>
   ;
 }
