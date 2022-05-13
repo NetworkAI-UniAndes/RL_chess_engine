@@ -1,11 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
 import Button from 'react-bootstrap/Button';
+import axios from 'axios';
 import './App.scss';
 
 export default function PlayRandomMoveEngine() {
   const [game, setGame] = useState(new Chess());
+  let currentMove = '';
+  const body = { FEN: game.fen(), UCI: currentMove};
+
+  useEffect(() => {
+    // POST request using axios inside useEffect React hook
+    axios.post('https://localhost:5000/main-engine/game/movements/validate', body)
+        .then(response => console.log(response.data));
+
+    // empty dependency array means this effect will only run once (like componentDidMount in classes)
+    }, [currentMove]);
 
   function safeGameMutate(modify) {
     setGame((g) => {
@@ -26,6 +37,9 @@ export default function PlayRandomMoveEngine() {
   }
 
   function onDrop(sourceSquare, targetSquare) {
+    // eslint-disable-next-line no-const-assign
+    currentMove = sourceSquare + targetSquare;
+    console.log(currentMove, game.fen());
     let move = null;
     safeGameMutate((game) => {
       move = game.move({
@@ -50,3 +64,15 @@ export default function PlayRandomMoveEngine() {
     </>
   ;
 }
+
+// function App() {
+  
+//   return (
+//     <div className="App">
+//       <ChessBoardComponent/>
+//    </div>
+
+//   );
+// }
+
+// export default App;
