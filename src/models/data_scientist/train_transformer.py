@@ -304,6 +304,7 @@ if __name__=="__main__":
         total_acc_train = 0
         total_loss_train = 0
         torch.cuda.empty_cache()
+        torch.cuda.memory_summary(device=None, abbreviated=False)
         for train_input, target_input, train_label, in tqdm(train_dataloader):
             
             train_label = train_label.to(device)
