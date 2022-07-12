@@ -275,7 +275,7 @@ if __name__=="__main__":
 
     ## we create the model 
     transformer=TransformerClassifier(vocab_size_fens=tokenizer.vocab_size,n_moves=len(moves_dict.keys()),
-                                  d_model=(len(moves_dict.keys()) -2), 
+                                  d_model=(len(moves_dict.keys()) -2)//8, 
                                   n_labels=len(moves_dict.keys()), dim_feedforward=(len(moves_dict.keys())-2))
 
     
@@ -289,7 +289,7 @@ if __name__=="__main__":
     train, val = Dataset(fens_train,last_moves_train,target_moves_train,
                         moves_dict),Dataset(fens_val,last_moves_val,target_val,moves_dict)
 
-    BATCH_SIZE=20
+    BATCH_SIZE=200
     train_dataloader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
     val_dataloader = torch.utils.data.DataLoader(val, batch_size=BATCH_SIZE)
 
