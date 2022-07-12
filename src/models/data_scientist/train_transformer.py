@@ -251,7 +251,7 @@ if __name__=="__main__":
     LEGAL_MOVES=[]
     stockfish = Stockfish()
     for (dirpath, dirnames, filenames) in os.walk(path_real_games):
-        for file_path in tqdm(filenames[:5]):
+        for file_path in tqdm(filenames[:100]):
             with open(path_real_games+"/"+file_path) as file:
                 game = chess.pgn.read_game(file)
                 if game is None:
