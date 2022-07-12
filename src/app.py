@@ -60,8 +60,9 @@ def validateMovement():
     content=request.get_json()
     FEN= content['FEN']
     UCI= content["UCI"]
-
     board =chess.Board(FEN)
+    if not board.is_valid():
+        return jsonify(movement_status="invalid")
     uci_move = chess.Move.from_uci(UCI)
     #response= board.is_valid(UCI)
     if  uci_move in board.legal_moves:
@@ -73,8 +74,7 @@ def validateMovement():
 def playGame():
     content=request.get_json()
     FEN= content['FEN']
-    print (engine.play(FEN))
-    return jsonify(movement_status="valid")
+    return jsonify(FEN=engine.play(FEN))
 
 if __name__ == "__main__":
     if os.environ.get("APPDEBUG") == "ON":

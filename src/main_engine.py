@@ -65,6 +65,6 @@ class Chess_Engine():
 
 if __name__=="__main__":
     chess_engine=Chess_Engine()
-    chess_engine.train(games_to_play=2,verbose=True)
-    #print(chess_engine.play("rnbqkbnr/pppppppp/pppppppp/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"))
+    #chess_engine.train(games_to_play=2,verbose=True)
+    print(chess_engine.play("rnbqkbnr/pppppppp/pppppppp/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"))
         
