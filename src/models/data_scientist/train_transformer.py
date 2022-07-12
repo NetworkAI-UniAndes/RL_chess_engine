@@ -244,7 +244,7 @@ if __name__=="__main__":
     
 
     """ We retrieve the movements for the game"""
-    MAX_LENGTH_VALID_MOVES=66
+    MAX_LENGTH_VALID_MOVES=69
     FENS=[]
     TARGET_MOVES=[]
     LAST_MOVES=[]
