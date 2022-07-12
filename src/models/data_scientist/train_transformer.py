@@ -289,7 +289,7 @@ if __name__=="__main__":
     train, val = Dataset(fens_train,last_moves_train,target_moves_train,
                         moves_dict),Dataset(fens_val,last_moves_val,target_val,moves_dict)
 
-    BATCH_SIZE=200
+    BATCH_SIZE=20
     train_dataloader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
     val_dataloader = torch.utils.data.DataLoader(val, batch_size=BATCH_SIZE)
 
@@ -304,7 +304,7 @@ if __name__=="__main__":
         total_acc_train = 0
         total_loss_train = 0
         torch.cuda.empty_cache()
-        torch.cuda.memory_summary(device=None, abbreviated=False)
+        torch.cuda.memory_summary(device="cuda")
         for train_input, target_input, train_label, in tqdm(train_dataloader):
             
             train_label = train_label.to(device)
