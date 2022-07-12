@@ -251,7 +251,7 @@ if __name__=="__main__":
     LEGAL_MOVES=[]
     stockfish = Stockfish()
     for (dirpath, dirnames, filenames) in os.walk(path_real_games):
-        for file_path in tqdm(filenames[:1000]):
+        for file_path in tqdm(filenames[:5]):
             with open(path_real_games+"/"+file_path) as file:
                 game = chess.pgn.read_game(file)
                 if game is None:
@@ -277,6 +277,7 @@ if __name__=="__main__":
     transformer=TransformerClassifier(vocab_size_fens=tokenizer.vocab_size,n_moves=len(moves_dict.keys()),
                                   d_model=(len(moves_dict.keys()) -2), 
                                   n_labels=len(moves_dict.keys()), dim_feedforward=(len(moves_dict.keys())-2))
+
     
     ## Now we train our machine 
     EPOCHS = 60
@@ -294,6 +295,7 @@ if __name__=="__main__":
 
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
+    transformer.to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(transformer.parameters(), lr= LR, momentum=MOMENTUM)
