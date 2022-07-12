@@ -303,7 +303,7 @@ if __name__=="__main__":
     for epoch_num in range(EPOCHS):
         total_acc_train = 0
         total_loss_train = 0
-        
+        torch.cuda.empty_cache()
         for train_input, target_input, train_label, in tqdm(train_dataloader):
             
             train_label = train_label.to(device)
