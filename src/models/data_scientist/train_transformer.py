@@ -212,7 +212,7 @@ class PositionalEncoding(torch.nn.Module):
 
 class TransformerClassifier(torch.nn.Module):
 
-    def __init__(self, vocab_size_fens,n_moves, dropout=0.1, d_model=512, n_labels=5, nhead=8, num_encoder_layers=4, dim_feedforward=2048):
+    def __init__(self, vocab_size_fens,n_moves, dropout=0.1, d_model=512, n_labels=5, nhead=16, num_encoder_layers=6, dim_feedforward=2048):
 
         super(TransformerClassifier, self).__init__()
         self.d_model=d_model
