@@ -155,11 +155,12 @@ class Tokenizer:
 
 class Dataset(torch.utils.data.Dataset):
 
-    def __init__(self, fens,legal_moves,target_moves,moves_dict):
+    def __init__(self, fens,legal_moves,target_moves,prev_moves,moves_dict):
         self.labels_dict=moves_dict
         self.labels = [self.labels_dict[label] for label in target_moves]
         self.legal_moves=[[self.labels_dict[move] for move in list_moves] for list_moves in legal_moves]
         self.positions = [tokenizer.tokenize(fen) for fen in fens]
+        self.prev_moves=[self.labels_dict[label] for label in prev_moves]
 
     def classes(self):
         return self.labels
@@ -177,14 +178,17 @@ class Dataset(torch.utils.data.Dataset):
     def get_batch_legal_moves(self, idx):
         # Fetch a batch of inputs
         return self.legal_moves[idx]
+    def get_batch_previous_moves(self, idx):
+        # Fetch a batch of inputs
+        return self.legal_moves[idx]
 
     def __getitem__(self, idx):
 
         batch_positions = self.get_batch_positions(idx)
         batch_y = self.get_batch_labels(idx)
         batch_input_tgt=torch.LongTensor(self.get_batch_legal_moves(idx))
-
-        return batch_positions, batch_input_tgt,batch_y
+        batch_prev_moves= self.get_batch_previous_moves(idx)
+        return batch_positions, batch_prev_moves,batch_y
 
 class PositionalEncoding(torch.nn.Module):
     "Implement the PE function."
@@ -295,10 +299,11 @@ if __name__=="__main__":
     LR = 1e-4
     MOMENTUM = 0.6
     fens_train, fens_val = np.split(FENS, [int(.8*len(FENS))])
-    last_moves_train, last_moves_val = np.split(LEGAL_MOVES, [int(.8*len(LEGAL_MOVES))])
+    last_moves_train, last_moves_val = np.split(LAST_MOVES, [int(.8*len(LAST_MOVES))])
     target_moves_train, target_val = np.split(TARGET_MOVES, [int(.8*len(TARGET_MOVES))])
-    train, val = Dataset(fens_train,last_moves_train,target_moves_train,
-                        moves_dict),Dataset(fens_val,last_moves_val,target_val,moves_dict)
+    legal_moves_train, legal_moves_val = np.split(LEGAL_MOVES, [int(.8*len(LEGAL_MOVES))])
+    train, val = Dataset(fens_train,legal_moves_train,target_moves_train,last_moves_train,
+                        moves_dict),Dataset(fens_val,legal_moves_val,target_val,last_moves_val,moves_dict)
 
     BATCH_SIZE=200
     train_dataloader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
@@ -318,7 +323,7 @@ if __name__=="__main__":
             
             train_label = train_label.to(device)
             target_input =target_input.to(device)
-            #target_input =torch.reshape(target_input,(target_input.size()[0],1))
+            target_input =torch.reshape(train_label,(target_input.size()[0],1))
             mask_target = target_input.to(device)
             mask_input = train_input.to(device)
             input_id = train_input.squeeze(1).to(device)
@@ -342,7 +347,7 @@ if __name__=="__main__":
 
                 val_label = val_label.to(device)
                 target_input =target_input.to(device)
-                #target_input =torch.reshape( target_input,(target_input.size()[0],1))
+                target_input =torch.reshape( train_label,(target_input.size()[0],1))
                 mask_target = target_input.to(device)
                 mask = val_input.to(device)
                 input_id = val_input.squeeze(1).to(device)
