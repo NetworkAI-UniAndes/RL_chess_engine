@@ -174,41 +174,43 @@ class Dataset(torch.utils.data.Dataset):
 
     def get_batch_positions(self, idx):
         # Fetch a batch of inputs
-        return self.positions[idx]
+        return self.positions[idx],[True if token ==322 else False for token in self.positions[idx]]
     def get_batch_legal_moves(self, idx):
         # Fetch a batch of inputs
-        return self.legal_moves[idx]
+        return self.legal_moves[idx],[True if token ==4273 else False for token in self.legal_moves[idx]]
     def get_batch_previous_moves(self, idx):
         # Fetch a batch of inputs
         return np.array(self.prev_moves[idx])
 
     def __getitem__(self, idx):
 
-        batch_positions = self.get_batch_positions(idx)
+        batch_positions,mask_batch_positions = self.get_batch_positions(idx)
+        mask_batch_positions=torch.BoolTensor(mask_batch_positions)
         batch_y = self.get_batch_labels(idx)
-        batch_input_tgt=torch.LongTensor(self.get_batch_legal_moves(idx))
+        batch_input_tgt,mask_batch_input_tgt=self.get_batch_legal_moves(idx)
+        batch_input_tgt=torch.LongTensor(batch_input_tgt)
+        mask_batch_input_tgt=torch.BoolTensor(mask_batch_input_tgt)
         batch_prev_moves= self.get_batch_previous_moves(idx)
-        return batch_positions, batch_input_tgt,batch_y
+        return batch_positions,mask_batch_positions, batch_input_tgt, mask_batch_input_tgt,batch_y
 
 class PositionalEncoding(torch.nn.Module):
-    "Implement the PE function."
-    def __init__(self, d_model, dropout, max_len=5000):
+    def __init__(self,
+                 emb_size: int,
+                 dropout: float,
+                 maxlen: int = 5000):
         super(PositionalEncoding, self).__init__()
-        self.dropout = torch.nn.Dropout(p=dropout)
-        
-        # Compute the positional encodings once in log space.
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) *
-                             -(math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        self.register_buffer('pe', pe)
-        
-    def forward(self, x):
-        x = x + Variable(self.pe[:x.size(0),:], 
-                         requires_grad=False)
-        return self.dropout(x)
+        den = torch.exp(- torch.arange(0, emb_size, 2)* math.log(10000) / emb_size)
+        pos = torch.arange(0, maxlen).reshape(maxlen, 1)
+        pos_embedding = torch.zeros((maxlen, emb_size))
+        pos_embedding[:, 0::2] = torch.sin(pos * den)
+        pos_embedding[:, 1::2] = torch.cos(pos * den)
+        pos_embedding = pos_embedding.unsqueeze(-2)
+
+        self.dropout = torch.nn.Dropout(dropout)
+        self.register_buffer('pos_embedding', pos_embedding)
+
+    def forward(self, token_embedding: torch.Tensor):
+        return self.dropout(token_embedding + self.pos_embedding[:token_embedding.size(0), :])
 
 class TransformerClassifier(torch.nn.Module):
 
@@ -216,14 +218,15 @@ class TransformerClassifier(torch.nn.Module):
 
         super(TransformerClassifier, self).__init__()
         self.d_model=d_model
-        self.embedding_fens = torch.nn.EmbeddingBag(vocab_size_fens, d_model)
-        self.embedding_moves = torch.nn.EmbeddingBag(n_moves, d_model)
+        self.embedding_fens = torch.nn.Embedding(vocab_size_fens, d_model, padding_idx=322)
+        self.embedding_moves = torch.nn.Embedding(n_moves, d_model, padding_idx=4273)
         self.pos_encoder_fens = PositionalEncoding(d_model, dropout)
         self.pos_encoder_moves = PositionalEncoding(d_model, dropout)
         self.transformer_model = torch.nn.Transformer(nhead=nhead, num_encoder_layers=num_encoder_layers
                                                 ,num_decoder_layers=num_encoder_layers,dim_feedforward=dim_feedforward,
-                                               d_model=d_model)
+                                               d_model=d_model,batch_first=True)
         self.dropout = torch.nn.Dropout(dropout)
+        self.reduce_dim=torch.nn.Embedding(d_model,n_moves)
         self.linear = torch.nn.Linear(d_model, n_labels)
         self.relu = torch.nn.ReLU()
 
@@ -232,13 +235,11 @@ class TransformerClassifier(torch.nn.Module):
         fens_encoded=self.pos_encoder_fens(embeded_fens)
         embeded_moves=self.embedding_moves(moves_vector)* np.sqrt(self.d_model)
         moves_encoded=self.pos_encoder_moves(embeded_moves)
-        
-        
-        pooled_output = self.transformer_model(src=fens_encoded,tgt=moves_encoded)
-        dropout_output = self.dropout(pooled_output)
+        pooled_output = self.transformer_model(src=fens_encoded,tgt=moves_encoded,
+        src_key_padding_mask=mask_fens,tgt_key_padding_mask=mask_moves)
+        dropout_output = self.dropout(torch.norm(pooled_output,dim=1))
         linear_output = self.linear(dropout_output)
         final_layer = self.relu(linear_output)
-
         return final_layer
 
 
@@ -319,13 +320,13 @@ if __name__=="__main__":
     for epoch_num in range(EPOCHS):
         total_acc_train = 0
         total_loss_train = 0
-        for train_input, target_input, train_label, in tqdm(train_dataloader):
-            
+        for train_input,mask_train_input, target_input,mask_target_input, train_label, in tqdm(train_dataloader):
+
             train_label = train_label.to(device)
             target_input =target_input.to(device)
             #target_input =torch.reshape(train_label,(target_input.size()[0],1))
-            mask_target = target_input.to(device)
-            mask_input = train_input.to(device)
+            mask_target = mask_target_input.to(device)
+            mask_input = mask_train_input.to(device)
             input_id = train_input.squeeze(1).to(device)
             
             output=transformer(input_id , mask_input,target_input,mask_target)
@@ -343,13 +344,13 @@ if __name__=="__main__":
         total_loss_val = 0
         with torch.no_grad():
 
-            for val_input, target_input,val_label in val_dataloader:
+            for val_input,mask_val_input, target_input,mask_target_input,val_label in val_dataloader:
 
                 val_label = val_label.to(device)
                 target_input =target_input.to(device)
                 #target_input =torch.reshape( val_label,(target_input.size()[0],1))
-                mask_target = target_input.to(device)
-                mask = val_input.to(device)
+                mask_target =mask_target_input.to(device)
+                mask = mask_val_input.to(device)
                 input_id = val_input.squeeze(1).to(device)
                 
 
