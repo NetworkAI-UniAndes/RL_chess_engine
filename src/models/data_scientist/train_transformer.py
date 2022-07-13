@@ -295,7 +295,7 @@ if __name__=="__main__":
 
     
     ## Now we train our machine 
-    EPOCHS = 260
+    EPOCHS = 1000
     LR = 1e-4
     MOMENTUM = 0.6
     fens_train, fens_val = np.split(FENS, [int(.8*len(FENS))])
@@ -314,7 +314,7 @@ if __name__=="__main__":
     transformer.to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(transformer.parameters(), lr= LR, momentum=MOMENTUM)
+    optimizer = torch.optim.Adam(transformer.parameters(), lr= LR)
 
     for epoch_num in range(EPOCHS):
         total_acc_train = 0
@@ -323,7 +323,7 @@ if __name__=="__main__":
             
             train_label = train_label.to(device)
             target_input =target_input.to(device)
-            target_input =torch.reshape(train_label,(target_input.size()[0],1))
+            target_input =torch.reshape(target_input,(target_input.size()[0],1))
             mask_target = target_input.to(device)
             mask_input = train_input.to(device)
             input_id = train_input.squeeze(1).to(device)
@@ -347,7 +347,7 @@ if __name__=="__main__":
 
                 val_label = val_label.to(device)
                 target_input =target_input.to(device)
-                target_input =torch.reshape( val_label,(target_input.size()[0],1))
+                target_input =torch.reshape( target_input,(target_input.size()[0],1))
                 mask_target = target_input.to(device)
                 mask = val_input.to(device)
                 input_id = val_input.squeeze(1).to(device)
