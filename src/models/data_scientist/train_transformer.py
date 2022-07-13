@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 from stockfish import Stockfish
 from torchtext.vocab import build_vocab_from_iterator
 from torch.optim import Adam
+from ast import literal_eval
 
 
 def get_moves_dict():
@@ -241,33 +242,43 @@ if __name__=="__main__":
     main_folder = os.path.join(os.getcwd().split("RL_chess_engine")[0], "RL_chess_engine")
     games_folder= os.path.join(main_folder, "src", "games")
     path_real_games = os.path.join(games_folder, "real_games") 
-    
+    data_folder=os.path.join(main_folder, "src", "notebooks",'data_scientist','data')
 
     """ We retrieve the movements for the game"""
     MAX_LENGTH_VALID_MOVES=100
-    FENS=[]
-    TARGET_MOVES=[]
-    LAST_MOVES=[]
-    LEGAL_MOVES=[]
-    stockfish = Stockfish()
-    for (dirpath, dirnames, filenames) in os.walk(path_real_games):
-        for file_path in tqdm(filenames[:1000]):
-            with open(path_real_games+"/"+file_path) as file:
-                game = chess.pgn.read_game(file)
-                if game is None:
-                    continue
-                for _ in game.mainline():
-                    fen=game.board().fen()
-                    FENS.append(fen)
-                    stockfish.set_fen_position(fen) 
-                    TARGET_MOVES.append(stockfish.get_best_move())
-                    LEGAL_MOVES.append([move.uci() for move in game.board().legal_moves])
-                    if game.move==None:
-                        LAST_MOVES.append('start')
-                    else:
-                        LAST_MOVES.append(game.move.uci())
-                    game=game.next()
-    LEGAL_MOVES=[moves+['end']*(MAX_LENGTH_VALID_MOVES-len(moves)) for moves in LEGAL_MOVES]
+    N_GAMES=100
+    if (os.path.exists(data_folder+'/'+str(N_GAMES)+'_games.csv')):
+        data= pd.read_csv(data_folder+'/'+str(N_GAMES)+'_games.csv')
+        FENS=data['fens'].to_list()
+        TARGET_MOVES=data['target_moves'].to_list()
+        LAST_MOVES=data['moves'].to_list()
+        LEGAL_MOVES=data['LEGAL_MOVES'].map(literal_eval).to_list()
+    else:
+        FENS=[]
+        TARGET_MOVES=[]
+        LAST_MOVES=[]
+        LEGAL_MOVES=[]
+        stockfish = Stockfish()
+        for (dirpath, dirnames, filenames) in os.walk(path_real_games):
+            for file_path in tqdm(filenames[:N_GAMES]):
+                with open(path_real_games+"/"+file_path) as file:
+                    game = chess.pgn.read_game(file)
+                    if game is None:
+                        continue
+                    for _ in game.mainline():
+                        fen=game.board().fen()
+                        FENS.append(fen)
+                        stockfish.set_fen_position(fen) 
+                        TARGET_MOVES.append(stockfish.get_best_move())
+                        LEGAL_MOVES.append([move.uci() for move in game.board().legal_moves])
+                        if game.move==None:
+                            LAST_MOVES.append('start')
+                        else:
+                            LAST_MOVES.append(game.move.uci())
+                        game=game.next()
+        LEGAL_MOVES=[moves+['end']*(MAX_LENGTH_VALID_MOVES-len(moves)) for moves in LEGAL_MOVES]
+        data_pd=pd.DataFrame({'fens':FENS,'moves':LAST_MOVES,'target_moves':TARGET_MOVES,'LEGAL_MOVES':LEGAL_MOVES})
+        data_pd.to_csv(data_folder+'/'+str(N_GAMES)+'_games.csv')
     ## Compute the moves tokenizer
 
     moves_dict,inv_moves_dict = get_moves_dict()
@@ -303,8 +314,6 @@ if __name__=="__main__":
     for epoch_num in range(EPOCHS):
         total_acc_train = 0
         total_loss_train = 0
-        torch.cuda.empty_cache()
-        torch.cuda.memory_summary(device="cuda")
         for train_input, target_input, train_label, in tqdm(train_dataloader):
             
             train_label = train_label.to(device)
