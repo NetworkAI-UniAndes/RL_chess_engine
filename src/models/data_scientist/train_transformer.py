@@ -290,7 +290,7 @@ if __name__=="__main__":
 
     ## we create the model 
     transformer=TransformerClassifier(vocab_size_fens=tokenizer.vocab_size,n_moves=len(moves_dict.keys()),
-                                  d_model=(len(moves_dict.keys()) -2)//2, 
+                                  #d_model=(len(moves_dict.keys()) -2)//2, 
                                   n_labels=len(moves_dict.keys()), dim_feedforward=(len(moves_dict.keys())-2))
 
     
