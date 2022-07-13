@@ -292,8 +292,8 @@ if __name__=="__main__":
     
     ## Now we train our machine 
     EPOCHS = 260
-    LR = 1e-2
-    MOMENTUM = 0.99
+    LR = 1e-4
+    MOMENTUM = 0.6
     fens_train, fens_val = np.split(FENS, [int(.8*len(FENS))])
     last_moves_train, last_moves_val = np.split(LEGAL_MOVES, [int(.8*len(LEGAL_MOVES))])
     target_moves_train, target_val = np.split(TARGET_MOVES, [int(.8*len(TARGET_MOVES))])
