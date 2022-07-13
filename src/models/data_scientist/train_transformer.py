@@ -350,7 +350,7 @@ if __name__=="__main__":
                 target_input =target_input.to(device)
                 #target_input =torch.reshape( val_label,(target_input.size()[0],1))
                 mask_target =mask_target_input.to(device)
-                mask = mask_val_input.to(device)
+                mask_input = mask_val_input.to(device)
                 input_id = val_input.squeeze(1).to(device)
                 
 
