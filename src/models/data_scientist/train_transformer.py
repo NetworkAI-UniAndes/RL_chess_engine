@@ -180,7 +180,7 @@ class Dataset(torch.utils.data.Dataset):
         return self.legal_moves[idx]
     def get_batch_previous_moves(self, idx):
         # Fetch a batch of inputs
-        return self.legal_moves[idx]
+        return self.prev_moves[idx]
 
     def __getitem__(self, idx):
 
