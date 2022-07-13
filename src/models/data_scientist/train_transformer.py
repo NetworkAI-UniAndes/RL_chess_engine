@@ -251,7 +251,7 @@ if __name__=="__main__":
 
     """ We retrieve the movements for the game"""
     MAX_LENGTH_VALID_MOVES=100
-    N_GAMES=100
+    N_GAMES=6000
     if (os.path.exists(data_folder+'/'+str(N_GAMES)+'_games.csv')):
         data= pd.read_csv(data_folder+'/'+str(N_GAMES)+'_games.csv')
         FENS=data['fens'].to_list()
