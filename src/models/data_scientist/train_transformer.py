@@ -314,7 +314,7 @@ if __name__=="__main__":
     transformer.to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(transformer.parameters(), lr= LR, momentum=MOMENTUM)
+    optimizer = torch.optim.AdamW(transformer.parameters(), lr= LR)
 
     for epoch_num in range(EPOCHS):
         total_acc_train = 0
