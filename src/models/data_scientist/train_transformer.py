@@ -306,7 +306,7 @@ if __name__=="__main__":
     train, val = Dataset(fens_train,legal_moves_train,target_moves_train,last_moves_train,
                         moves_dict),Dataset(fens_val,legal_moves_val,target_val,last_moves_val,moves_dict)
 
-    BATCH_SIZE=500
+    BATCH_SIZE=400
     train_dataloader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
     val_dataloader = torch.utils.data.DataLoader(val, batch_size=BATCH_SIZE, num_workers=4)
 
