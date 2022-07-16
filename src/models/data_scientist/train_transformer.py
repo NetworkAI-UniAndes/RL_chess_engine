@@ -307,8 +307,8 @@ if __name__=="__main__":
                         moves_dict),Dataset(fens_val,legal_moves_val,target_val,last_moves_val,moves_dict)
 
     BATCH_SIZE=500
-    train_dataloader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
-    val_dataloader = torch.utils.data.DataLoader(val, batch_size=BATCH_SIZE)
+    train_dataloader = torch.utils.data.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+    val_dataloader = torch.utils.data.DataLoader(val, batch_size=BATCH_SIZE, num_workers=4)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
